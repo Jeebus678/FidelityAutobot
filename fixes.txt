@@ -1,0 +1,1 @@
+- Don't throw errors within functions, rather throw them after the return 
