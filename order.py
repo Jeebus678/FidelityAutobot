@@ -3,7 +3,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains as actions
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-
+from selenium.webdriver.common.action_chains import ActionChains
 
 def cash_text_to_float(text):
     try:
@@ -17,6 +17,7 @@ def cash_text_to_float(text):
 class Order:
     def __init__(self, driver):
         self.driver = driver
+        self.actions = ActionChains(driver)
 
     def clickout(self):
         self.driver.find_element(By.CSS_SELECTOR, "div.funds-cash").click()
@@ -65,30 +66,24 @@ class Order:
 
     def set_order_trade_type(self, trade_type):
         self.driver.implicitly_wait(2)
-        if trade_type == "buy":
+        if trade_type:
             self.set_order_buy()
-        elif trade_type == "sell":
-            self.set_order_sell()
         else:
-            print("Parsing error. [set_order_trade_type]\n")
+            self.set_order_sell()
 
     def set_order_trigger_type(self, trigger_type, limit_price=0, limit_expiration="day"):
         self.driver.implicitly_wait(2)
-        if trigger_type == "limit":
-            self.set_order_limit(limit_price, limit_expiration)
-        elif trigger_type == "market":
+        if trigger_type:
             self.set_order_market()
         else:
-            print("Parsing error. [set_order_trigger_type]\n")
+            self.set_order_limit(limit_price, limit_expiration)
 
     def set_order_quantity_type(self, quantity, quantity_type):
         self.driver.implicitly_wait(2)
-        if quantity_type == "dollars":
-            self.set_order_dollars(quantity)
-        elif quantity_type == "shares":
+        if quantity_type:
             self.set_order_shares(quantity)
         else:
-            print("Parsing error. [set_order_quantity_type]\n")
+            self.set_order_dollars(quantity)
 
     def get_ticker_price(self):
         price = WebDriverWait(self.driver, timeout=10).until(
@@ -97,7 +92,7 @@ class Order:
 
     def get_total_cost(self):
         WebDriverWait(self.driver, timeout=10).until(
-            (EC.text_to_be_present_in_element((By.CSS_SELECTOR, "span.eqt-commission__pricing-total-cost"), ("$"))))
+            (EC.text_to_be_present_in_element((By.CSS_SELECTOR, "span.eqt-commission__pricing-total-cost"), "$")))
         total = self.driver.find_element(By.CSS_SELECTOR, "span.eqt-commission__pricing-total-cost").text
         return cash_text_to_float(total)
 
@@ -108,38 +103,35 @@ class Order:
 
     def get_available_shares(self):
         element = self.driver.find_element(By.ID, "shareAmount")
-        actions.move_to_element(element).click().perform()
+        self.actions.move_to_element(element).click().perform()
         owned = WebDriverWait(self.driver, timeout=10).until(
             (EC.visibility_of_element_located((By.CSS_SELECTOR, "div.eqt-quantity__dropdownlist__item__field")))).text
         return float(owned)
 
     def click_preview_order(self):
         self.driver.implicitly_wait(2)
-        self.driver.find_element(By.CSS_SELECTOR, "button#previewOrderBtn").click()
+        self.driver.find_element(By.CSS_SELECTOR, "pvd3-button#previewOrderBtn").click()
 
     def trade_error(self, trade_type):
         quantity_type = "cash"
         balance = "$" + str(self.get_available_cash())
-        if trade_type == "sell":
+        if not trade_type:
             quantity_type = "shares"
             balance = self.get_available_shares()
-        print("\nNot enough {quantity_type} on balance to execute {trade_type} order. See Details: \n".format(
+        print("\nNot enough {quantity_type} on balance to execute order. See Details: \n".format(
             quantity_type=quantity_type, trade_type=trade_type))
         print("Order total: ${:.2f}\n".format(self.get_total_cost()))
         print("{quantity_type} on balance: {balance}\n".format(
             quantity_type=quantity_type[0].upper() + quantity_type[1:],
             balance=balance))
         if quantity_type == "shares":
-            print(" Total position: ${:.2f}\n".format(balance * self.get_ticker_price()))
+            print("Total position: ${:.2f}\n".format(balance * self.get_ticker_price()))
 
     def test_order(self, trade_type):
-        if trade_type == "buy":
+        if trade_type:
             return self.get_available_cash() >= self.get_total_cost()
-        elif trade_type == "sell":
-            return self.get_available_shares() * self.get_ticker_price() >= self.get_total_cost()
         else:
-            print("Parsing error [test_order]")
-            return False
+            return self.get_available_shares() * self.get_ticker_price() >= self.get_total_cost()
 
     def execute_trade(self, trade_type):
         if self.test_order(trade_type):
@@ -148,8 +140,7 @@ class Order:
         else:
             return False
 
-    def create_trade(self, ticker, trade_type, quantity, quantity_type, trade_trigger_type="market", limit_price=0,
-                     limit_expiration="day"):
+    def create_trade(self, ticker, trade_type, quantity, quantity_type, trade_trigger_type="market", limit_price=0, limit_expiration="day"):
         self.driver.get(
             "https://digital.fidelity.com/ftgw/digital/trade-equity/index?FRAME_LOADED=Y&NAVBAR=Y&ACCOUNT={account_id}".format(
                 account_id=cfg.account["id"]))
@@ -157,5 +148,5 @@ class Order:
         self.set_order_trade_type(trade_type)
         self.set_order_trigger_type(trade_trigger_type, limit_price, limit_expiration)
         self.set_order_quantity_type(quantity, quantity_type)
-        if self.execute_trade(trade_type) == False:
+        if not self.execute_trade(trade_type):
             self.trade_error(trade_type)
