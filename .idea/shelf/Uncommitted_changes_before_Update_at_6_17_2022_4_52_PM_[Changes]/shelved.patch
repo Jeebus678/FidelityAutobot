@@ -1,0 +1,11 @@
+Index: fixes.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>- Don't throw errors within functions, rather throw them after the return \r\n
+===================================================================
+diff --git a/fixes.txt b/fixes.txt
+--- a/fixes.txt	
++++ b/fixes.txt	
+@@ -1,1 +1,1 @@
+-- Don't throw errors within functions, rather throw them after the return 
++- Pull data from non-fidelity sites for stock vars
