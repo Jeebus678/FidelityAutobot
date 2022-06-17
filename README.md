@@ -3,7 +3,7 @@ The purpose of this program is to provide simple order automation for fidelity i
 Currently this is work-in-progress with only support for creating simple buy/sell orders through the `Orders.py` module. 
 
 Usage: 
-``` bash
+``` 
 usage: main.py [-h] [-T TICKER] [-q QUANTITY] [-b | -s] [-S | -D] [-m | -l]
 
 options:
@@ -19,7 +19,7 @@ options:
 ```
 
 Examples: 
-``` bash
+``` 
 main.py -T VT --quantity 1 --buy --shares --market 
 main.py -T AMC --quantity 10 --sell --dollars --limit  
 ```
