@@ -3,7 +3,7 @@ The purpose of this program is to provide simple order automation for fidelity i
 Currently this is work-in-progress with only support for creating simple buy/sell orders through the `Orders.py` module. 
 
 Usage: 
-``` Python 
+``` bash
 usage: main.py [-h] [-T TICKER] [-q QUANTITY] [-b | -s] [-S | -D] [-m | -l]
 
 options:
