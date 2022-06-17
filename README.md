@@ -4,22 +4,25 @@ Currently this is work-in-progress with only support for creating simple buy/sel
 
 Usage: 
 ``` 
-usage: main.py [-h] [-T TICKER] [-q QUANTITY] [-b | -s] [-S | -D] [-m | -l]
-
-options:
-  -h, --help            show this help message and exit
-  -T TICKER, --ticker TICKER
+usage: main.py [-h] [-T TICKER] [-q QUANTITY] [-b | -s] [-S | -D] [-m | -l] [-p PRICE] [-d | -g]
+                        Define order ticker
   -q QUANTITY, --quantity QUANTITY
-  -b, --buy
-  -s, --sell
-  -S, --shares
-  -D, --dollars
-  -m, --market
-  -l, --limit
+                        Set order quantity [-1 to select all]
+  -b, --buy             Sets order to buy
+  -s, --sell            Sets order to sell
+  -S, --shares          Sets order to shares
+  -D, --dollars         Sets order to dollars
+  -m, --market          Sets order to market
+  -l, --limit           Sets order to limit
+  -p PRICE, --price PRICE
+                        Sets limit price
+  -d, --day             Sets limit order to day
+  -g, --gtc             Sets limit order to good-till-cancelled
+
 ```
 
 Examples: 
 ``` 
 main.py -T VT --quantity 1 --buy --shares --market 
-main.py -T AMC --quantity 10 --sell --dollars --limit  
+main.py -T AMC --quantity 10 --sell --dollars --limit --price 50 --gtc    
 ```
