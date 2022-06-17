@@ -1,17 +1,25 @@
-The purpose of this program is to provide simple order automation for fidelity investments using the selenium API. Fidelity doesn't provide an API for trading, so this is a great workaround for automation. 
+The purpose of this program is to provide simple order automation for fidelity investments using the selenium API. Fidelity doesn't provide an API for trading, so this is my workaround for automation. 
 
 Currently this is work-in-progress with only support for creating simple buy/sell orders through the `Orders.py` module. 
 
 Usage: 
-``` Python 
-Orders = order.Order(driver)
-Orders.create_trade("TSLA", "buy", 1, "shares") #            <-- defaults to "market"
-Orders.create_trade("AAPL", "sell", 100, "dollars") 
-Orders.create_trade("GME", "sell", 10, "shares", "limit", 10000000, "gtc") # <-- order created as "limit" 
+``` 
+usage: main.py [-h] [-T TICKER] [-q QUANTITY] [-b | -s] [-S | -D] [-m | -l]
+
+options:
+  -h, --help            show this help message and exit
+  -T TICKER, --ticker TICKER
+  -q QUANTITY, --quantity QUANTITY
+  -b, --buy
+  -s, --sell
+  -S, --shares
+  -D, --dollars
+  -m, --market
+  -l, --limit
 ```
 
-- Create Orders object & pass webdriver
-- Create trades py passing parameters to `create_trade` 
-- Offers full support over all basic trade functions, that is: Buy/Sell, Limit/Market, Shares/Dollars settings
-
-### Work in progress :) 
+Examples: 
+``` 
+main.py -T VT --quantity 1 --buy --shares --market 
+main.py -T AMC --quantity 10 --sell --dollars --limit  
+```
