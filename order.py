@@ -1,15 +1,17 @@
+from selenium.common import TimeoutException
+
 import config as cfg
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.action_chains import ActionChains as actions
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+
 
 def cash_text_to_float(text):
     try:
         new_text = text.replace("$", "").replace(",", "")
         return float(new_text)
-    except:
+    except (Exception,):
         print("Failed converting text to float.\n")
         print("Input text: \t", text)
 
@@ -38,31 +40,43 @@ class Order:
     def set_order_amount(self, amount):
         self.driver.find_element(By.CSS_SELECTOR, "input#eqt-shared-quantity").send_keys(amount)
         self.driver.implicitly_wait(1)
+        self.clickout()
 
     def set_order_dollars(self, amount):
         self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket-toggle-button[for=quantity-type-dollars]").click()
         self.set_order_amount(amount)
-        self.clickout()
         self.driver.implicitly_wait(1)
+        self.clickout()
 
     def set_order_shares(self, amount):
         self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket-toggle-button[for=quantity-type-shares]").click()
         self.set_order_amount(amount)
-        self.clickout()
         self.driver.implicitly_wait(1)
+        self.clickout()
 
     def set_order_market(self):
         self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__ordertype-toggle[for=market-yes]").click()
         self.driver.implicitly_wait(1)
 
+    def set_order_expiration(self, expiration_type):
+        if expiration_type:
+            self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__action-toggle.eq-ticket-toggle-button[for=action-day]").click()
+        else:
+            self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__action-toggle.eq-ticket-toggle-button[for=action-gtc]").click()
+
+    # def test_limit_threshold(self, limit_price):
+    #     last_bid = self.get_ticker_price()
+    #     if ((last_bid * 1.5) > limit_price) and ((last_bid * 0.5) < limit_price):
+    #         return True
+    #     else
+    #         return False
+
     def set_order_limit(self, limit_price, expiration_type):
         self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__ordertype-toggle[for=market-no]").click()
-        self.driver.find_element(By.CSS_SELECTOR, "input.dropdown-toggle[id=eqt-ordsel-limit-price-field").send_keys(
-            limit_price)
-        self.driver.find_element(By.CSS_SELECTOR,
-                                 "label.eq-ticket__action-toggle.eq-ticket-toggle-button[for=action-{operator}]".format(
-                                     operator=expiration_type)).click()
+        self.driver.find_element(By.CSS_SELECTOR, "input.dropdown-toggle[id=eqt-ordsel-limit-price-field").send_keys(limit_price)
+        self.set_order_expiration(expiration_type)
         self.driver.implicitly_wait(1)
+        self.clickout()
 
     def set_order_trade_type(self, trade_type):
         self.driver.implicitly_wait(2)
@@ -70,20 +84,28 @@ class Order:
             self.set_order_buy()
         else:
             self.set_order_sell()
+        self.driver.implicitly_wait(1)
+        self.clickout()
 
-    def set_order_trigger_type(self, trigger_type, limit_price=0, limit_expiration="day"):
+    def set_order_trigger_type(self, trigger_type, limit_price, limit_expiration):
         self.driver.implicitly_wait(2)
         if trigger_type:
             self.set_order_market()
         else:
             self.set_order_limit(limit_price, limit_expiration)
+        self.driver.implicitly_wait(1)
+        self.clickout()
 
     def set_order_quantity_type(self, quantity, quantity_type):
         self.driver.implicitly_wait(2)
-        if quantity_type:
+        if quantity < 0:
+            self.set_order_shares(self.get_available_shares())
+        elif quantity_type:
             self.set_order_shares(quantity)
         else:
             self.set_order_dollars(quantity)
+        self.driver.implicitly_wait(1)
+        self.clickout()
 
     def get_ticker_price(self):
         price = WebDriverWait(self.driver, timeout=10).until(
@@ -108,45 +130,29 @@ class Order:
             (EC.visibility_of_element_located((By.CSS_SELECTOR, "div.eqt-quantity__dropdownlist__item__field")))).text
         return float(owned)
 
+    def print_trade_error(self):
+        error_msg = self.driver.find_element(By.CSS_SELECTOR, "div.pvd-inline-alert__content").text
+        print(error_msg)
+
+    def submit_order(self):
+        self.click_preview_order()
+        try:
+            WebDriverWait(self.driver, 4).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.pvd-modal__heading")))
+            self.print_trade_error()
+        except TimeoutException:
+            print("Order Success.")
+            # self.driver.find_element(By.CSS_SELECTOR, "button#placeOrderBtn").click()
+
     def click_preview_order(self):
-        self.driver.implicitly_wait(2)
         self.driver.find_element(By.CSS_SELECTOR, "pvd3-button#previewOrderBtn").click()
+        self.driver.implicitly_wait(2)
 
-    def trade_error(self, trade_type):
-        quantity_type = "cash"
-        balance = "$" + str(self.get_available_cash())
-        if not trade_type:
-            quantity_type = "shares"
-            balance = self.get_available_shares()
-        print("\nNot enough {quantity_type} on balance to execute order. See Details: \n".format(
-            quantity_type=quantity_type, trade_type=trade_type))
-        print("Order total: ${:.2f}\n".format(self.get_total_cost()))
-        print("{quantity_type} on balance: {balance}\n".format(
-            quantity_type=quantity_type[0].upper() + quantity_type[1:],
-            balance=balance))
-        if quantity_type == "shares":
-            print("Total position: ${:.2f}\n".format(balance * self.get_ticker_price()))
-
-    def test_order(self, trade_type):
-        if trade_type:
-            return self.get_available_cash() >= self.get_total_cost()
-        else:
-            return self.get_available_shares() * self.get_ticker_price() >= self.get_total_cost()
-
-    def execute_trade(self, trade_type):
-        if self.test_order(trade_type):
-            self.click_preview_order()
-            print("{trade_type} order executed.".format(trade_type=trade_type[0].upper() + trade_type[1:]))
-        else:
-            return False
-
-    def create_trade(self, ticker, trade_type, quantity, quantity_type, trade_trigger_type="market", limit_price=0, limit_expiration="day"):
+    def create_trade(self, ticker, trade_type, quantity, quantity_type, trade_trigger_type=True, limit_price=0, limit_expiration=True):
         self.driver.get(
             "https://digital.fidelity.com/ftgw/digital/trade-equity/index?FRAME_LOADED=Y&NAVBAR=Y&ACCOUNT={account_id}".format(
                 account_id=cfg.account["id"]))
         self.set_order_ticker(ticker)
         self.set_order_trade_type(trade_type)
-        self.set_order_trigger_type(trade_trigger_type, limit_price, limit_expiration)
         self.set_order_quantity_type(quantity, quantity_type)
-        if not self.execute_trade(trade_type):
-            self.trade_error(trade_type)
+        self.set_order_trigger_type(trade_trigger_type, limit_price, limit_expiration)
+        self.submit_order()

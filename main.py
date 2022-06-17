@@ -9,58 +9,71 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 
-
 chromedriver_autoinstaller.install()
 
 driver = webdriver.Chrome(options=cfg.chrome_options, service=Service())
 
-
 cli_parser = argparse.ArgumentParser(description="A program for creating fidelity orders.")
 
 cli_parser.add_argument('-T', '--ticker',
-                        type=str)
+                        type=str,
+                        help='Define order ticker')
 
 cli_parser.add_argument('-q', '--quantity',
-                        type=int)
+                        type=int,
+                        help='Set order quantity [-1 to select all]')
 
 order_type = cli_parser.add_mutually_exclusive_group()
 order_type.add_argument('-b', '--buy',
                         dest='buy',
-                        action='store_true')
+                        action='store_true',
+                        help='Sets order to buy')
 
 order_type.add_argument('-s', '--sell',
                         dest='buy',
-                        action='store_false')
+                        action='store_false',
+                        help='Sets order to sell')
 
 unit = cli_parser.add_mutually_exclusive_group()
 unit.add_argument('-S', '--shares',
                   dest='shares',
-                  action='store_true')
+                  action='store_true',
+                  help='Sets order to shares')
 
 unit.add_argument('-D', '--dollars',
                   dest='shares',
-                  action='store_false')
+                  action='store_false',
+                  help='Sets order to dollars')
 
 execution_type = cli_parser.add_mutually_exclusive_group()
 execution_type.add_argument('-m', '--market',
                             dest='market',
-                            action='store_true')
+                            default=True,
+                            action='store_true',
+                            help='Sets order to market')
 
 execution_type.add_argument('-l', '--limit',
                             dest='market',
-                            action='store_false')
+                            action='store_false',
+                            help='Sets order to limit')
 
+cli_parser.add_argument('-p', '--price',
+                        type=int,
+                        default=False,
+                        help='Sets limit price')
 
-# cli_parser.add_argument('--limit_price', '-Lp',
-#                         default=False,
-#                         type=str,
-#                         action='store_true')
-#
-# cli_parser.add_argument('--expiration', '-E',
-#                         default=False,
-#                         type=str,
-#                         action='store_true',
-#                         help='Expiration for the limit. [GTC or day]')
+expiration_type = cli_parser.add_mutually_exclusive_group()
+expiration_type.add_argument('-d', '--day',
+                             dest='day',
+                             default=False,
+                             action='store_true',
+                             help='Sets limit order to day')
+
+expiration_type.add_argument('-g', '--gtc',
+                             dest='day',
+                             default=False,
+                             action='store_false',
+                             help='Sets limit order to good-till-cancelled')
 
 
 # def agree_tos():
@@ -88,4 +101,4 @@ Orders = order.Order(driver)
 if __name__ == '__main__':
     login_fidelity()
     sleep(5)
-    Orders.create_trade(args.ticker, args.buy, args.quantity, args.shares)
+    Orders.create_trade(args.ticker, args.buy, args.quantity, args.shares, args.market, args.price, args.day)
