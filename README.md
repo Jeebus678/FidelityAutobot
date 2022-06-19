@@ -19,10 +19,3 @@ usage: main.py [-h] [-T TICKER] [-q QUANTITY] [-b | -s] [-S | -D] [-m | -l] [-p 
   -g, --gtc             Sets limit order to good-till-cancelled
 
 ```
-
-Examples: 
-``` 
-main.py -T VT --quantity 1 --buy --shares --market 
-main.py -T AMC --quantity 10 --sell --dollars --limit --price 50 --gtc    '
-main.py -T GME -q 1 -b -S -m 
-```
