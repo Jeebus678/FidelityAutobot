@@ -1,11 +1,12 @@
-from selenium.common import TimeoutException
-
 import config as cfg
+import datetime
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import TimeoutException
 
+current_time = datetime.datetime.now()
 
 def cash_text_to_float(text):
     try:
@@ -63,13 +64,6 @@ class Order:
             self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__action-toggle.eq-ticket-toggle-button[for=action-day]").click()
         else:
             self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__action-toggle.eq-ticket-toggle-button[for=action-gtc]").click()
-
-    # def test_limit_threshold(self, limit_price):
-    #     last_bid = self.get_ticker_price()
-    #     if ((last_bid * 1.5) > limit_price) and ((last_bid * 0.5) < limit_price):
-    #         return True
-    #     else
-    #         return False
 
     def set_order_limit(self, limit_price, expiration_type):
         self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__ordertype-toggle[for=market-no]").click()
@@ -132,16 +126,18 @@ class Order:
 
     def print_trade_error(self):
         error_msg = self.driver.find_element(By.CSS_SELECTOR, "div.pvd-inline-alert__content").text
-        print(error_msg)
+        print(current_time.strftime("%d%m%y - %H%M") + error_msg + '\n')
 
     def submit_order(self):
         self.click_preview_order()
         try:
             WebDriverWait(self.driver, 4).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.pvd-modal__heading")))
             self.print_trade_error()
+            exit()
         except TimeoutException:
-            print("Order Success.")
+            print(current_time.strftime("%d%m%y - %H%M") + "Order Success.\n")
             # self.driver.find_element(By.CSS_SELECTOR, "button#placeOrderBtn").click()
+            exit()
 
     def click_preview_order(self):
         self.driver.find_element(By.CSS_SELECTOR, "pvd3-button#previewOrderBtn").click()
