@@ -8,6 +8,7 @@ from selenium.common.exceptions import TimeoutException
 
 current_time = datetime.datetime.now()
 
+
 def cash_text_to_float(text):
     try:
         new_text = text.replace("$", "").replace(",", "")

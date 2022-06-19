@@ -92,6 +92,8 @@ def login_fidelity():
     except TimeoutException:
         print("Timeout logging in.")
         exit()
+    except (Exception,):
+        print("Most likely being detected... Switch user profile.")
 
 
 args = cli_parser.parse_args()
