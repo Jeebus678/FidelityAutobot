@@ -132,12 +132,13 @@ class Order:
     def submit_order(self):
         self.click_preview_order()
         try:
-            WebDriverWait(self.driver, 4).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.pvd-modal__heading")))
+            WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.pvd-modal__heading")))
             self.print_trade_error()
             exit()
         except TimeoutException:
             print(current_time.strftime("%d%m%y - %H%M") + "Order Success.\n")
-            # self.driver.find_element(By.CSS_SELECTOR, "button#placeOrderBtn").click()
+            self.driver.find_element(By.CSS_SELECTOR, "button#placeOrderBtn").click()
+            WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "span#order-reveived-lable")))
             exit()
 
     def click_preview_order(self):
