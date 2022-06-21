@@ -1,13 +1,13 @@
 import config as cfg
-import datetime
+import datetime, pytz
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException
 
-current_time = datetime.datetime.now()
-
+current_time = datetime.datetime.now(pytz.timezone('America/New_York'))
+timestamp = current_time.strftime("%d/%m/%y - %H:%M ")
 
 def cash_text_to_float(text):
     try:
@@ -127,7 +127,7 @@ class Order:
 
     def print_trade_error(self):
         error_msg = self.driver.find_element(By.CSS_SELECTOR, "div.pvd-inline-alert__content").text
-        print(current_time.strftime("%d%m%y - %H%M") + error_msg + '\n')
+        print(timestamp + error_msg + '\n')
 
     def submit_order(self):
         self.click_preview_order()
@@ -136,7 +136,7 @@ class Order:
             self.print_trade_error()
             exit()
         except TimeoutException:
-            print(current_time.strftime("%d%m%y - %H%M") + "Order Success.\n")
+            print(timestamp + "Order Success.\n")
             self.driver.find_element(By.CSS_SELECTOR, "button#placeOrderBtn").click()
             WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "span#order-reveived-lable")))
             exit()
