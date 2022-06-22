@@ -19,3 +19,12 @@ usage: main.py [-h] [-T TICKER] [-q QUANTITY] [-b | -s] [-S | -D] [-m | -l] [-p 
   -g, --gtc             Sets limit order to good-till-cancelled
 
 ```
+
+Config file should look like this:
+``` Python
+account = {
+    "user": "your_username",
+    "pass": "your_password",
+    "id": "account_number"
+}
+```
