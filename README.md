@@ -32,3 +32,8 @@ account = {
     "id": "account_number"
 }
 ```
+
+And configure the chrome webdriver to include the proper path
+``` Python
+driver = webdriver.Chrome(options=cfg.chrome_options, executable_path='PATH_TO_CHROMEDRIVER')
+```
