@@ -1,10 +1,12 @@
-import config as cfg
-import datetime, pytz
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
+import datetime
+import pytz
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+import config as cfg
 
 current_time = datetime.datetime.now(pytz.timezone('America/New_York'))
 timestamp = current_time.strftime("%d/%m/%y - %H:%M ")
