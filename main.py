@@ -81,6 +81,13 @@ optional.add_argument('-h', '--help',
                       help='Show this help message and exit')
 
 
+def agree_tos():
+    try:
+        WebDriverWait(driver, 5).until((EC.element_to_be_clickable((By.CSS_SELECTOR, "a.accept-link")))).click()
+    except:
+        return
+
+
 def login_fidelity():
     driver.get("https://digital.fidelity.com/prgw/digital/login/full-page?AuthRedUrl=https://oltx.fidelity.com/ftgw/fbc/ofsummary/defaultPage")
     try:
@@ -89,6 +96,7 @@ def login_fidelity():
         driver.find_element(By.CSS_SELECTOR, "input#password").send_keys(cfg.account["pass"])
         driver.implicitly_wait(1)
         driver.find_element(By.CSS_SELECTOR, "button#fs-login-button").submit()
+        # WebDriverWait(driver, 30).until((EC.visibility_of_element_located((By.CSS_SELECTOR, "span#account-title"))))
     except TimeoutException:
         print("Timeout logging in.")
         exit()

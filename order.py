@@ -11,6 +11,7 @@ import config as cfg
 current_time = datetime.datetime.now(pytz.timezone('America/New_York'))
 timestamp = current_time.strftime("%d/%m/%y - %H:%M ")
 
+
 def cash_text_to_float(text):
     try:
         new_text = text.replace("$", "").replace(",", "")
@@ -34,11 +35,11 @@ class Order:
         self.clickout()
 
     def set_order_buy(self):
-        self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__action-toggle[for=action-buy]").click()
+        self.driver.find_element(By.CSS_SELECTOR, "label.pvd-segment__label[for=buy-segment]").click()
         self.driver.implicitly_wait(1)
 
     def set_order_sell(self):
-        self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__action-toggle[for=action-sell]").click()
+        self.driver.find_element(By.CSS_SELECTOR, "label.pvd-segment__label[for=sell-segment]").click()
         self.driver.implicitly_wait(1)
 
     def set_order_amount(self, amount):
@@ -47,29 +48,29 @@ class Order:
         self.clickout()
 
     def set_order_dollars(self, amount):
-        self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket-toggle-button[for=quantity-type-dollars]").click()
+        self.driver.find_element(By.CSS_SELECTOR, "label.pvd-segment__label[for=dollars-segment]").click()
         self.set_order_amount(amount)
         self.driver.implicitly_wait(1)
         self.clickout()
 
     def set_order_shares(self, amount):
-        self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket-toggle-button[for=quantity-type-shares]").click()
+        self.driver.find_element(By.CSS_SELECTOR, "label.pvd-segment__label[for=shares-segment]").click()
         self.set_order_amount(amount)
         self.driver.implicitly_wait(1)
         self.clickout()
 
     def set_order_market(self):
-        self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__ordertype-toggle[for=market-yes]").click()
+        self.driver.find_element(By.CSS_SELECTOR, "label.pvd-segment__label[for=market-yes-segment]").click()
         self.driver.implicitly_wait(1)
 
     def set_order_expiration(self, expiration_type):
         if expiration_type:
-            self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__action-toggle.eq-ticket-toggle-button[for=action-day]").click()
+            self.driver.find_element(By.CSS_SELECTOR, "label.pvd-segment__label[for=pvd-segment-id-873531696156]").click()
         else:
-            self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__action-toggle.eq-ticket-toggle-button[for=action-gtc]").click()
+            self.driver.find_element(By.CSS_SELECTOR, "label.pvd-segment__label[for=pvd-segment-id-487340035056]").click()
 
     def set_order_limit(self, limit_price, expiration_type):
-        self.driver.find_element(By.CSS_SELECTOR, "label.eq-ticket__ordertype-toggle[for=market-no]").click()
+        self.driver.find_element(By.CSS_SELECTOR, "label.pvd-segment__label[for=market-no-segment]").click()
         self.driver.find_element(By.CSS_SELECTOR, "input.dropdown-toggle[id=eqt-ordsel-limit-price-field").send_keys(limit_price)
         self.set_order_expiration(expiration_type)
         self.driver.implicitly_wait(1)
@@ -134,13 +135,13 @@ class Order:
     def submit_order(self):
         self.click_preview_order()
         try:
-            WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.pvd-modal__heading")))
+            WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.pvd-modal__heading")))
             self.print_trade_error()
             exit()
         except TimeoutException:
+            WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "button#placeOrderBtn"))).click()
+            WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "span#order-reveived-lable")))
             print(timestamp + "Order Success.\n")
-            self.driver.find_element(By.CSS_SELECTOR, "button#placeOrderBtn").click()
-            WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "span#order-reveived-lable")))
             exit()
 
     def click_preview_order(self):
